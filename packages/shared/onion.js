@@ -29,4 +29,24 @@ function ConstruirCapa(mensaje, clave, destino) {
     };
 }
 
-module.exports = { ConstruirCapa };
+function pelarCapa(capaCifrada, clavePrivadaPropia) {
+    await sodium.ready;
+
+    const cifrado = sodium.from_base64(capaCifrada.cifrado);
+    const nonce = sodium.from_base64(capaCifrada.nonce);
+    const clavePublicaEfimera = sodium.from_base64(capaCifrada.clavePublicaEfimera);
+
+    const paqueteBytes = sodium.crypto_box_open_easy(
+        cifrado,
+        nonce,
+        clavePublicaEfimera,
+        clavePrivadaPropia
+    );
+
+    const paquete = JSON.parse(sodium.to_string(paqueteBytes));
+
+    return paquete;
+}
+
+
+module.exports = { ConstruirCapa, pelarCapa };
