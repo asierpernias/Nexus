@@ -1,6 +1,6 @@
 const sodium = require(`libsodium-wrappers`);
 
-function ConstruirCapa(mensaje, clave, destino) {
+async function ConstruirCapa(mensaje, clavePublicaDestino, destino) {
 
     await sodium.ready;
 
@@ -13,7 +13,7 @@ function ConstruirCapa(mensaje, clave, destino) {
         payload: mensaje
     };
 
-    const paqueteBytes = sodium.from_string(JSON.stringfy(paquete));
+    const paqueteBytes = sodium.from_string(JSON.stringify(paquete));
 
     const cifrado = sodium.crypto_box_easy(
         paqueteBytes,
@@ -29,7 +29,7 @@ function ConstruirCapa(mensaje, clave, destino) {
     };
 }
 
-function pelarCapa(capaCifrada, clavePrivadaPropia) {
+async function pelarCapa(capaCifrada, clavePrivadaPropia) {
     await sodium.ready;
 
     const cifrado = sodium.from_base64(capaCifrada.cifrado);
