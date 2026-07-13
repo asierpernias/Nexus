@@ -1,7 +1,9 @@
-const onion = require(`shared/onion`);
-const crypto = require(`shared/crypto`);
+const onion = require(`./onion`);
+const crypto = require(`./crypto`);
+const nodes = require(`./nodes`)
 
 module.exports = {
     ...onion,
-    ...crypto
+    ...crypto,
+    nodes
 };
