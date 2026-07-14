@@ -2,8 +2,8 @@ const  http = require(`http`);
 const shared = require('shared');
 const { obtenerOcrearClaves } = require('./claves');
 
-const PUERTO = 3301;
-const NOMBRE_NODO = 'A';
+const PUERTO = parseInt(process.env.NODE_PUERTO) || 3301;
+const NOMBRE_NODO = process.env.NODE_NOMBRE;
 
 let clavePrivadaNodo = null;
 
@@ -85,7 +85,7 @@ const servidor = http.createServer((req, res) => {
     }
 });
 
-obtenerOcrearClaves().then((par) =>     {
+obtenerOcrearClaves(NOMBRE_NODO).then((par) =>     {
     clavePrivadaNodo = par.privateKey;
     servidor.listen(PUERTO, () => {
         console.log('Nodo relay escuchando puerto', PUERTO);

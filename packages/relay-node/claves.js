@@ -2,27 +2,28 @@ const fs = require('fs');
 const path = require('path');
 const sodium = require('libsodium-wrappers');
 
-const RUTA_CLAVES = path.join(__dirname, 'claves-nodo.json');
-
-async function obtenerOcrearClaves() {
+async function obtenerOcrearClaves(nombreNodo) {
     await sodium.ready;
 
-    if (fs.existsSync(RUTA_CLAVES)) {
-        const contenido = fs.readFileSync(RUTA_CLAVES, 'utf-8');
+    const rutasClave = path.join(__dirname, `claves-${nombreNodo}.json`);
+
+
+    if (fs.existsSync(rutasClave)) {
+        const contenido = fs.readFileSync(rutasClave, 'utf-8');
         const datos = JSON.parse(contenido);
         return {
-            publcKey: sodium.from_base64(datos.publicKey),
+            publicKey: sodium.from_base64(datos.publicKey),
             privateKey: sodium.from_base64(datos.privateKey)
         };
     }
 
     const par = sodium.crypto_box_keypair();
     const paraGuardar = {
-        publicKey: sodium.to_base64(par.publcKey),
+        publicKey: sodium.to_base64(par.publicKey),
         privateKey: sodium.to_base64(par.privateKey)
     };
 
-    fs.writeFileSync(RUTA_CLAVES, JSON.stringify(paraGuardar, null, 2));
+    fs.writeFileSync(rutasClave, JSON.stringify(paraGuardar, null, 2));
 
     return par;
 }
