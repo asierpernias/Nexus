@@ -1,6 +1,6 @@
 const sodium = require('libsodium-wrappers');
 
-const CONTEXTO = 'ratchetE2';
+const CONTEXTO = 'ratchetE';
 const ID_CLAVE_MENSAJE = 1;
 const ID_CLAVE_SIGUIENTE = 2;
 
@@ -25,7 +25,7 @@ async function avanzarCadena(claveActual) {
 
 }
 
-async function generarClaveCOmpartida(miClavePrivada, clavePublicaOtro) {
+async function generarClaveRaizCompartida(miClavePrivada, clavePublicaOtro) {
     await sodium.ready;
 
     const secretocompartido = sodium.crypto_scalarmult(miClavePrivada, clavePublicaOtro);
@@ -41,7 +41,7 @@ async function cifrarMensaje(mensaje, claveMensaje) {
     const nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);
     const mensajeBytes = sodium.from_string(mensaje);
 
-    const cifrado = sodium.cryptto_secretbox_easy(mensajeBytes, nonce, claveMensaje);
+    const cifrado = sodium.crypto_secretbox_easy(mensajeBytes, nonce, claveMensaje);
 
     return {
         cifrado: sodium.to_base64(cifrado),
@@ -60,4 +60,4 @@ async function descifrarMensaje(paqueteCifrado, claveMensaje) {
     return sodium.to_string(mensajeBytes);
 }
 
-module.exports = { avanzarCadena, generarClaveCOmpartida, cifrarMensaje, descifrarMensaje }
+module.exports = { avanzarCadena, generarClaveRaizCompartida, cifrarMensaje, descifrarMensaje }
