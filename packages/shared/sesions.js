@@ -82,11 +82,15 @@ async function recibirMensaje(carpetaUsuario, idCOntacto, paqueteCifrado) {
         const clavePublicaRemota = sodium.from_base64(claveRemotaNueva);
         const claveRaizActual = sodium.from_base64(estado.claveRaiz);
 
-        const {nuevaRaiz, nuevaCadena} = await avanzarRatchetDH(
+        const {nuevaRaiz: raizTrasRecepcion, nuevaCadena: nuevaCadenaRecepcion} = await avanzarRatchetDH(
             claveRaizActual, miClavePrivada, clavePublicaRemota
         );
         const nuevoParDH = await generarParDH();
-        
+
+        const {nuevaRaiz: raizTrasEnvio, nuevaCadena: nuevaCadenaEnvio} = await avanzarRatchetDH(
+            raizTrasRecepcion, nuevoParDH.privateKey, clavePublicaRemota
+        );
+
         estado.claveRaiz = sodium.to_base64(nuevaRaiz);
         estado.cadenaRecepcion = sodium.to_base64(nuevaCadena);
         estado.clavePrivadaDH = sodium.to_base64(nuevoParDH.privateKey);

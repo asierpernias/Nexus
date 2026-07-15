@@ -30,14 +30,23 @@ async function prueba() {
     fs.writeFileSync(carpetaA + '/sesion-B.json', JSON.stringify(estadoA, null, 2));
     fs.writeFileSync(carpetaB + '/sesion-A.json', JSON.stringify(estadoB, null, 2));
 
-    const mensajes = ["hola", "¿Como estás?", "probando sesiones con ratchet"];
-
-    for (const texto of mensajes) {
+    const mensajesdeAaB = ["hola", "¿Como estás?", "probando sesiones con ratchet"];
+    const mensajesdeBa = ["hola", "BIEN?", "cambio y corto"];
+    
+    for (const texto of mensajesdeAaB) {
         const paquete = await enviarMensaje(carpetaA, 'B', texto);
-
         const textoDescifrado = await recibirMensaje(carpetaB, 'A', paquete);
-        console.log(`Original: ${texto} -> Descifrado ${textoDescifrado}`)
+        console.log(`A->B: ${texto} -> Descifrado ${textoDescifrado}`)
     }   
+    for (const texto of mensajesdeBa) {
+        const paquete = await enviarMensaje(carpetaB, 'A', texto);
+        const textoDescifrado = await recibirMensaje(carpetaA, 'B', paquete);
+        console.log(`B->A: ${texto} -> Descifrado ${textoDescifrado}`)
+    }   
+
+    const paquetefinal = await enviarMensaje(carpetaB, 'A', 'confirmacion final');
+    const finaldescifrado = await recibirMensaje(carpetaA, 'B', paquetefinal);
+    console.log(`Post-rotacion ${paquetefinal}, ${finaldescifrado}`);
 
 }
 
