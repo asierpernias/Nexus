@@ -60,4 +60,26 @@ async function descifrarMensaje(paqueteCifrado, claveMensaje) {
     return sodium.to_string(mensajeBytes);
 }
 
-module.exports = { avanzarCadena, generarClaveRaizCompartida, cifrarMensaje, descifrarMensaje }
+async function generarParDH() {
+    await sodium.ready;
+    return sodium.crypto_kx_keypair();
+}
+
+async function avanzarRatchetDH(claveRaizActual, miClavePrivadaDH, clavePublicaDHRemota) {
+    await sodium.ready;
+
+    const secretDH = sodium.crypto_scalarmult(miClavePrivadaDH, clavePublicaDHRemota);
+
+    const material = new Uint8Array(claveRaizActual.length + secretDH.length);
+    material.set(claveRaizActual, 0);
+    material.set(secretDH, claveRaizActual.length);
+    const nuevaRaiz = sodium.crypto_generichash(32, material);
+
+    const CONTEXTO_DH = 'dratchet';
+    const nuevaCadena = sodium.crypto_kdf_derive_from_key(
+        32, 1, CONTEXTO_DH, nuevaRaiz
+    );
+
+    return {nuevaRaiz, nuevaCadena };
+}
+module.exports = { generarParDH, avanzarRatchetDH, avanzarCadena, generarClaveRaizCompartida, cifrarMensaje, descifrarMensaje }

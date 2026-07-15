@@ -18,8 +18,17 @@ async function prueba() {
     if (!fs.existsSync(carpetaA)) fs.mkdirSync(carpetaA);
     if (!fs.existsSync(carpetaB)) fs.mkdirSync(carpetaB);
 
-    await iniciarSesion(carpetaA, 'B', claveA.privateKey, claveB.publicKey);
-    await iniciarSesion(carpetaB, 'A', claveB.privateKey, claveA.publicKey);
+    const {clavePublicaDH: dhPublicaA} = await iniciarSesion(carpetaA, 'B', claveA.privateKey, claveB.publicKey);
+    const {clavePublicaDH: dhPublicaB} =  await iniciarSesion(carpetaB, 'A', claveB.privateKey, claveA.publicKey);
+
+    const estadoA = JSON.parse(fs.readFileSync(carpetaA + '/sesion-B.json'));
+    const estadoB = JSON.parse(fs.readFileSync(carpetaB + '/sesion-A.json'));
+
+    estadoA.clavePublicaDHRemota = sodium.to_base64(dhPublicaB);
+    estadoB.clavePublicaDHRemota = sodium.to_base64(dhPublicaA);
+
+    fs.writeFileSync(carpetaA + '/sesion-B.json', JSON.stringify(estadoA, null, 2));
+    fs.writeFileSync(carpetaB + '/sesion-A.json', JSON.stringify(estadoB, null, 2));
 
     const mensajes = ["hola", "¿Como estás?", "probando sesiones con ratchet"];
 

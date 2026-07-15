@@ -1,3 +1,8 @@
 {
-  "cadena": "KBlIh4UN7apTh8jFidKPxLM8MnIWb-wblcQxs_ohYDc"
+  "claveRaiz": "EgSqqDV4_yOScd3FDcTDLqi5GbMretd22biFdRcOPGE",
+  "cadenasEnvio": "qO4v1RhMTKmhVTlqCfnQtz424KrHjvigzDlehD6jXik",
+  "cadenaRecepcion": "MJE7we2RdmxYW0187l1RQhKFJXxuzl_o3CTXdZCqLgs",
+  "clavePrivadaDH": "koXh7Q9F-AhlRRqg59yJQ6MVuPCxEBRNYjPJTKr1-dU",
+  "clavePublicaDH": "cJKfom9qz6lvcxL75U3t80l7Mdq925alq7svRc0ftwE",
+  "clavePublicaDHRemota": "N1HMjGjy3Dz4f7Dz0PDHqNfElD43_cEyqXCEM8z1HF0"
 }

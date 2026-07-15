@@ -6,58 +6,100 @@ const {
     avanzarCadena,
     generarClaveRaizCompartida,
     cifrarMensaje,
-    descifrarMensaje
+    descifrarMensaje,
+    generarParDH,
+    avanzarRatchetDH
 } = require('./crypto');
 
 function rutaSesion(carpetaUsuario, idCOntacto) {
     return path.join(carpetaUsuario, `sesion-${idCOntacto}.json`);
 }
 
-function guardarEstadoCadena(carpetaUsuario, idCOntacto, claveCadena) {
+function guardarEstado(carpetaUsuario, idCOntacto, estado) {
     const ruta = rutaSesion(carpetaUsuario, idCOntacto);
-    const datos = { cadena: sodium.to_base64(claveCadena)};
-    fs.writeFileSync(ruta, JSON.stringify(datos, null, 2));
+    fs.writeFileSync(ruta, JSON.stringify(estado, null, 2));
 }
 
-function leerEstadoCadenA(carpetaUsuario, idCOntacto) {
+function leerEstado(carpetaUsuario, idCOntacto) {
     const ruta = rutaSesion(carpetaUsuario, idCOntacto);
     if (!fs.existsSync(ruta)) {
         return null;
-    }
-
-    const contenido = fs.readFileSync(ruta, 'utf-8');
-    const datos = JSON.parse(contenido);
-    return sodium.from_base64(datos.cadena);
+    }   
+    return JSON.parse(fs.readFileSync(ruta, 'utf-8'));
 }
 
 async function iniciarSesion(carpetaUsuario, idCOntacto, miClavePrivada, clavePublicaContacto) {
     await sodium.ready;
-    const raiz = await generarClaveRaizCompartida(miClavePrivada, clavePublicaContacto);
-    guardarEstadoCadena(carpetaUsuario, idCOntacto, raiz);
-    return raiz;
+    const claveRaiz = await generarClaveRaizCompartida(miClavePrivada, clavePublicaContacto);
+    const parDH = await generarParDH();
+
+    const CONTEXTO_CADENAS = 'cadenas0';
+    const cadenaInicial = sodium.crypto_kdf_derive_from_key(32, 1, CONTEXTO_CADENAS, claveRaiz);
+    
+    const estado = {
+        claveRaiz: sodium.to_base64(claveRaiz),
+        cadenasEnvio: sodium.to_base64(cadenaInicial),
+        cadenaRecepcion: sodium.to_base64(cadenaInicial),
+        clavePrivadaDH: sodium.to_base64(parDH.privateKey),
+        clavePublicaDH: sodium.to_base64(parDH.publicKey),
+        clavePublicaDHRemota: null
+    };
+
+    guardarEstado(carpetaUsuario, idCOntacto, estado);
+    return {clavePublicaDH: parDH.publicKey};
 }
 
 async function enviarMensaje(carpetaUsuario, idCOntacto, texto) {
     await sodium.ready;
-    const cadenaActual = leerEstadoCadenA(carpetaUsuario, idCOntacto);
-    if(!cadenaActual) {
-        throw new Error('No hay sesion iniciada. Llama a iniciarSesison ');
+    const estado = leerEstado(carpetaUsuario, idCOntacto);
+    if(!estado) {
+        throw new Error('No hay sesion iniciada');
     }
+    const cadenaActual = sodium.from_base64(estado.cadenasEnvio);
     const {claveMensaje, claveSiguiente} = await avanzarCadena(cadenaActual);
+    estado.cadenasEnvio = sodium.to_base64(claveSiguiente);
     const paquete = await cifrarMensaje(texto, claveMensaje);
-    guardarEstadoCadena(carpetaUsuario, idCOntacto, claveSiguiente);
-    return paquete;
+    guardarEstado(carpetaUsuario, idCOntacto, estado);
+    return {
+        ...paquete,
+        clavePublicaDHEmisor: estado.clavePublicaDH
+    };
 }
 
 async function recibirMensaje(carpetaUsuario, idCOntacto, paqueteCifrado) {
     await sodium.ready;
-    const cadenaActual = leerEstadoCadenA(carpetaUsuario, idCOntacto);
-    if (!cadenaActual) {
+    const estado = leerEstado(carpetaUsuario, idCOntacto);
+    if (!estado) {
         throw new Error(`No hay sesion iniciada. Llama a iniciarSesion`);
     }
+
+    const claveRemotaNueva = paqueteCifrado.clavePublicaDHEmisor;
+    const claveRemotaAnterior = estado.clavePublicaDHRemota;
+
+    if (claveRemotaNueva !== claveRemotaAnterior) {
+
+        const miClavePrivada = sodium.from_base64(estado.clavePrivadaDH);
+        const clavePublicaRemota = sodium.from_base64(claveRemotaNueva);
+        const claveRaizActual = sodium.from_base64(estado.claveRaiz);
+
+        const {nuevaRaiz, nuevaCadena} = await avanzarRatchetDH(
+            claveRaizActual, miClavePrivada, clavePublicaRemota
+        );
+        const nuevoParDH = await generarParDH();
+        
+        estado.claveRaiz = sodium.to_base64(nuevaRaiz);
+        estado.cadenaRecepcion = sodium.to_base64(nuevaCadena);
+        estado.clavePrivadaDH = sodium.to_base64(nuevoParDH.privateKey);
+        estado.clavePublicaDH = sodium.to_base64(nuevoParDH.publicKey);
+        estado.clavePublicaDHRemota = claveRemotaNueva
+
+
+    }
+    const cadenaActual = sodium.from_base64(estado.cadenaRecepcion);
     const {claveMensaje, claveSiguiente} = await avanzarCadena(cadenaActual);
     const texto = await descifrarMensaje(paqueteCifrado, claveMensaje);
-    guardarEstadoCadena(carpetaUsuario, idCOntacto, claveSiguiente);
+    estado.cadenaRecepcion = sodium.to_base64(claveSiguiente);
+    guardarEstado(carpetaUsuario, idCOntacto, estado);
     return texto;
 }
 
