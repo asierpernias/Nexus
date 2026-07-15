@@ -5,7 +5,17 @@ const { obtenerOcrearClaves } = require('./claves');
 const PUERTO = parseInt(process.env.NODE_PUERTO) || 3301;
 const NOMBRE_NODO = process.env.NODE_NOMBRE;
 
+const RETRASO_MINIMO_NS = parseInt(process.env.MIX_RETRASO_MIN_MS || 200);
+const RETRASO_MAX_NS = parseInt(process.env.MIX_RETRASO_MAX_MS || 2000);
+
+if (RETRASO_MINIMO_NS >= RETRASO_MAX_NS) {
+    throw new Error("Retraso min ha de ser mayor que el maximo");
+}
 let clavePrivadaNodo = null;
+
+function RetrasoAleatorio() {
+    return RETRASO_MINIMO_NS + Math.random() * (RETRASO_MAX_NS - RETRASO_MINIMO_NS);
+}
 
 function reenviarA(direccion, payload) {
     const [host, port] = direccion.split(':');
@@ -61,16 +71,14 @@ const servidor = http.createServer((req, res) => {
 
             try {
                 const { siguiente, payload } = await shared.pelarCapa(datos, clavePrivadaNodo);
-                
-                if (siguiente === "Receptor") {
-                    console.log("[NODO", NOMBRE_NODO, "]", "MENSAJE:", payload);
-                } else {
-                    const direccion = shared.nodes[siguiente];
-                    if (!direccion) {
-                        throw new Error("Sin direccion");
-                    }
-                    reenviarA(direccion, payload);
+                const direccion = shared.nodes[siguiente];
+                if (!direccion) {
+                    throw new Error("Sin direccion");
                 }
+                const espera = RetrasoAleatorio();
+                setTimeout(() => {
+                     reenviarA(direccion, payload);
+                }, espera);
                 res.writeHead(200, {'content-type': 'application/json'});
                 res.end(JSON.stringify({status: 'procesado'}));
             } catch (err) {
@@ -88,6 +96,6 @@ const servidor = http.createServer((req, res) => {
 obtenerOcrearClaves(NOMBRE_NODO).then((par) =>     {
     clavePrivadaNodo = par.privateKey;
     servidor.listen(PUERTO, () => {
-        console.log('Nodo relay escuchando puerto', PUERTO);
+        console.log('Nodo relay escuchando puerto', PUERTO, `mixing: ${RETRASO_MINIMO_NS} - ${RETRASO_MAX_NS}ms`);
     });
 });
