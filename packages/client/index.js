@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const sodium = require('libsodium-wrappers');
 const shared = require('shared');
-const { CANCELLED } = require('dns');
 
 const NOMBRE = process.argv[2];
 const PUERTO = parseInt(process.argv[3]);
@@ -23,12 +22,12 @@ const CARPETA_SESIONES = path.join(CARPETA_PROPIA, `claves-${NOMBRE}`);
 if (!fs.existsSync(CARPETA_SESIONES)) fs.mkdirSync(CARPETA_SESIONES);
 
 let miClavePrivada = null;
-let miclavePublica = null;
+let miClavePublica = null;
 
 async function obtenerCrearClavesPropias() {
     await sodium.ready;
 
-    if (!fs.existsSync(RUTA_CLAVE_PROPIA)) {
+    if (fs.existsSync(RUTA_CLAVE_PROPIA)) {
         const datos = JSON.parse(fs.readFileSync(RUTA_CLAVE_PROPIA, 'utf-8'));
         return {
             publicKey: sodium.from_base64(datos.publicKey),
@@ -55,7 +54,7 @@ function leerClavePublicaDe(nombreUsuario) {
 }
 
 function leerClavePublicaNodo(nombreNodo) {
-    const ruta = path.join(CARPETA_PROPIA, "...", 'relay-node', `claves-${nombreNodo}.json`);
+    const ruta = path.join(CARPETA_PROPIA, "..", 'relay-node', `claves-${nombreNodo}.json`);
     const datos = JSON.parse(fs.readFileSync(ruta, 'utf-8'));
     return sodium.from_base64(datos.publicKey);
 }
@@ -104,7 +103,7 @@ function enviarNodoA(capa) {
 async function enviarMensaje(nombreDestion, texto) {
     await asegurarSesionCon(nombreDestion);
 
-    const paqueteE2E = await shared.enviarMensaje(CARPETA_SESIONES, nombreDestion, texto);
+    const paqueteE2E = await shared.enviarMensaje( CARPETA_SESIONES, nombreDestion, texto, NOMBRE) ;
 
     const clavePublicaA = leerClavePublicaNodo('A');
     const clavePublicaB = leerClavePublicaNodo('B');
@@ -126,8 +125,8 @@ const servidor = http.createServer((req, res) => {
     }
 
     let cuerpo = '';
-    req.on('data', chunl => cuerpo += chunk.toString());
-    requestAnimationFrame.on('end', async () => {
+    req.on('data', chunk => cuerpo += chunk.toString());
+    req('end', async () => {
         let paqueteE2E;
         try {
             paqueteE2E = JSON.parse(cuerpo);
@@ -144,7 +143,7 @@ const servidor = http.createServer((req, res) => {
             }
 
             await asegurarSesionCon(nombreRemitente);
-            const texto = shared.recibirMensaje(CARPETA_SESIONES, nombreRemitente, paqueteE2E);
+            const texto = await shared.recibirMensaje(CARPETA_SESIONES, nombreRemitente, paqueteE2E);
             console.log(`[${NOMBRE}] Mensaje de ${nombreRemitente}: ${texto}`);
 
             res.writeHead(200, {'content-type': 'application/json'});
@@ -161,7 +160,7 @@ const servidor = http.createServer((req, res) => {
     await sodium.ready;
     const par = await obtenerCrearClavesPropias();
     miClavePrivada = par.privateKey;
-    miclavePublica = par.publicKey;
+    miClavePublica = par.publicKey;
 
     servidor.listen(PUERTO, async () => {
         console.log(`Cliente "${NOMBRE}" escuchando en el puerto ${PUERTO}`);

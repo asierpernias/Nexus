@@ -49,7 +49,7 @@ async function iniciarSesion(carpetaUsuario, idCOntacto, miClavePrivada, clavePu
     return {clavePublicaDH: parDH.publicKey};
 }
 
-async function enviarMensaje(carpetaUsuario, idCOntacto, texto) {
+async function enviarMensaje( carpetaUsuario, idCOntacto, texto, miNombre) {
     await sodium.ready;
     const estado = leerEstado(carpetaUsuario, idCOntacto);
     if(!estado) {
@@ -62,7 +62,8 @@ async function enviarMensaje(carpetaUsuario, idCOntacto, texto) {
     guardarEstado(carpetaUsuario, idCOntacto, estado);
     return {
         ...paquete,
-        clavePublicaDHEmisor: estado.clavePublicaDH
+        clavePublicaDHEmisor: estado.clavePublicaDH,
+        remitente: miNombre,
     };
 }
 
@@ -91,8 +92,9 @@ async function recibirMensaje(carpetaUsuario, idCOntacto, paqueteCifrado) {
             raizTrasRecepcion, nuevoParDH.privateKey, clavePublicaRemota
         );
 
-        estado.claveRaiz = sodium.to_base64(nuevaRaiz);
-        estado.cadenaRecepcion = sodium.to_base64(nuevaCadena);
+        estado.claveRaiz = sodium.to_base64(raizTrasEnvio);
+        estado.cadenasEnvio = sodium.to_base64(nuevaCadenaEnvio);
+        estado.cadenaRecepcion = sodium.to_base64(nuevaCadenaRecepcion);
         estado.clavePrivadaDH = sodium.to_base64(nuevoParDH.privateKey);
         estado.clavePublicaDH = sodium.to_base64(nuevoParDH.publicKey);
         estado.clavePublicaDHRemota = claveRemotaNueva
