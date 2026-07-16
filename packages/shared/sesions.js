@@ -58,6 +58,8 @@ async function enviarMensaje( carpetaUsuario, idCOntacto, texto, miNombre) {
     const cadenaActual = sodium.from_base64(estado.cadenasEnvio);
     const {claveMensaje, claveSiguiente} = await avanzarCadena(cadenaActual);
     estado.cadenasEnvio = sodium.to_base64(claveSiguiente);
+    console.log(sodium.to_base64(cadenaActual));
+    console.log(sodium.to_base64(claveMensaje));
     const paquete = await cifrarMensaje(texto, claveMensaje);
     guardarEstado(carpetaUsuario, idCOntacto, estado);
     return {
@@ -76,8 +78,9 @@ async function recibirMensaje(carpetaUsuario, idCOntacto, paqueteCifrado) {
 
     const claveRemotaNueva = paqueteCifrado.clavePublicaDHEmisor;
     const claveRemotaAnterior = estado.clavePublicaDHRemota;
-
-    if (claveRemotaNueva !== claveRemotaAnterior) {
+    if (estado.clavePublicaDHRemota === null) {
+        estado.clavePublicaDHRemota = claveRemotaNueva;
+    } else if (claveRemotaNueva !== claveRemotaAnterior) {
 
         const miClavePrivada = sodium.from_base64(estado.clavePrivadaDH);
         const clavePublicaRemota = sodium.from_base64(claveRemotaNueva);
@@ -102,7 +105,9 @@ async function recibirMensaje(carpetaUsuario, idCOntacto, paqueteCifrado) {
 
     }
     const cadenaActual = sodium.from_base64(estado.cadenaRecepcion);
+    console.log(estado.cadenaRecepcion);
     const {claveMensaje, claveSiguiente} = await avanzarCadena(cadenaActual);
+    console.log(sodium.to_base64(claveMensaje));
     const texto = await descifrarMensaje(paqueteCifrado, claveMensaje);
     estado.cadenaRecepcion = sodium.to_base64(claveSiguiente);
     guardarEstado(carpetaUsuario, idCOntacto, estado);
