@@ -1,20 +1,26 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from "react";
+import Login from './app/login';
+import { View } from 'react-native';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+interface Identidad {
+  nombre: string;
+  publicKey: Uint8Array;
+  privateKey: Uint8Array;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  const [identidad, setIdentidad] = useState<Identidad | null>(null);
+  if (!identidad) {
+    function privateKey(nombre: string, publicKey: Uint8Array<ArrayBufferLike>, privateKey: Uint8Array<ArrayBufferLike>): void {
+      throw new Error("Function not implemented.");
+    }
+
+    return (
+      <Login onLogin={(nombre, publicKey, privateKey) =>
+          setIdentidad({nombre, publicKey, privateKey})
+      } />
+    );
+  }
+
+  return <View style={{flex:1, backgroundColor:"#0a0a0a"}} />;
+}
