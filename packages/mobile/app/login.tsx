@@ -38,10 +38,17 @@ export default function Login({onLogin} : Props) {
         setCargando(true);
         try {
             if (esNuevo) {
+                console.log("1")
                 const par = crypto_box_keypair();
+                console.log("2")
+                console.log("cifrar fn:", typeof cifrarClavePrivada);
+                console.log("descifsrar fn:", typeof descifrarClavePrivada);
                 const datosCifrados = await cifrarClavePrivada(par.privateKey, password);
+                console.log("3")
                 await SecureStore.setItemAsync(KEY_CIFRADO, JSON.stringify(datosCifrados));
+                console.log("4")
                 await crearIdentidad(nombre, par.privateKey, par.publicKey);
+                console.log("5")
                 onLogin(nombre, par.publicKey, par.privateKey);
             } else {
                 const identidad = await cargarIdentidad();

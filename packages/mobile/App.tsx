@@ -11,10 +11,6 @@ interface Identidad {
 export default function App() {
   const [identidad, setIdentidad] = useState<Identidad | null>(null);
   if (!identidad) {
-    function privateKey(nombre: string, publicKey: Uint8Array<ArrayBufferLike>, privateKey: Uint8Array<ArrayBufferLike>): void {
-      throw new Error("Function not implemented.");
-    }
-
     return (
       <Login onLogin={(nombre, publicKey, privateKey) =>
           setIdentidad({nombre, publicKey, privateKey})
