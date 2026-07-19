@@ -1,5 +1,4 @@
 import * as SecureStore from 'expo-secure-store';
-import { randombytes_buf, from_base64, to_base64} from 'react-native-libsodium';
 
 const KEY_PRIVATE = 'identity_private_key';
 const KEY_PUBLIC = 'identity_public_key';
@@ -11,10 +10,13 @@ export interface Identity {
     privateKey: Uint8Array;
 }
 
-export async function crearIdentidad(nombre: string, privateKey: Uint8Array, publicKey: Uint8Array): Promise<void>{
-    await SecureStore.setItemAsync(KEY_PRIVATE, to_base64(privateKey));
-    await SecureStore.setItemAsync(KEY_PUBLIC, to_base64(publicKey));
-    await SecureStore.setItemAsync(KEY_NAME, nombre);    
+const toBase64 = (buf: Uint8Array) => btoa(String.fromCharCode(...buf));
+const fromBase64 = (str: string) => new Uint8Array(atob(str).split('').map(c => c.charCodeAt(0)));
+
+export async function crearIdentidad(nombre: string, privateKey: Uint8Array, publicKey: Uint8Array): Promise<void> {
+    await SecureStore.setItemAsync(KEY_PRIVATE, toBase64(privateKey));
+    await SecureStore.setItemAsync(KEY_PUBLIC, toBase64(publicKey));
+    await SecureStore.setItemAsync(KEY_NAME, nombre);
 }
 
 export async function cargarIdentidad(): Promise<Identity | null> {
@@ -26,8 +28,8 @@ export async function cargarIdentidad(): Promise<Identity | null> {
 
     return {
         nombre,
-        publicKey: from_base64(pubB64),
-        privateKey: from_base64(privB64),
+        publicKey: fromBase64(pubB64),
+        privateKey: fromBase64(privB64),
     };
 }
 
