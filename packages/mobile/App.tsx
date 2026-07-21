@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Login from './app/login';
-import { View } from 'react-native';
+import Home from "./app/Home";
+import AnadirContacto from "./app/añadirContacto";
 
 interface Identidad {
   nombre: string;
@@ -8,15 +9,38 @@ interface Identidad {
   privateKey: Uint8Array;
 }
 
+type Pantalla = 'home' | 'chat' | 'añadir';
+
 export default function App() {
   const [identidad, setIdentidad] = useState<Identidad | null>(null);
+  const [pantalla, setPantalla] = useState<Pantalla>('home');
+  const [chatActivo, setChatActivo] = useState<string | null>(null);
+
   if (!identidad) {
     return (
       <Login onLogin={(nombre, publicKey, privateKey) =>
-          setIdentidad({nombre, publicKey, privateKey})
+          setIdentidad({ nombre, publicKey, privateKey })
       } />
     );
   }
 
-  return <View style={{flex:1, backgroundColor:"#0a0a0a"}} />;
+  if (pantalla === 'añadir') {
+    return (
+      <AnadirContacto 
+        onVolver={() => setPantalla('home')}
+        onContactoAñadido={() => setPantalla('home')}
+        />
+    );
+  }
+
+  return (
+    <Home
+      nombre={identidad.nombre}
+      onAbrirChat={(contacto) => {
+        setChatActivo(contacto);
+        setPantalla('chat');
+      }}
+      onAnadirContacto={() => setPantalla('añadir')}
+    />
+  );
 }
