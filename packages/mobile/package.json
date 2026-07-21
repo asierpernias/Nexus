@@ -12,7 +12,9 @@
     "react-native": "0.86.0",
     "react-native-get-random-values": "^2.0.0",
     "react-native-libsodium": "^1.5.1",
+    "react-native-qrcode-svg": "^6.3.21",
     "react-native-quick-crypto": "^1.1.6",
+    "react-native-svg": "15.15.4",
     "shared": "*"
   },
   "devDependencies": {

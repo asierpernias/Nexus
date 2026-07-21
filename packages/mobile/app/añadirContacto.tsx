@@ -48,9 +48,9 @@ export default function AnadirContacto({onVolver, onContactoAñadido}: Props) {
          <View style={s.container}>
             <View style={s.header}>
                 <TouchableOpacity onPress={onVolver}>
-                    <Text style={s.volver}>  Volver</Text>
+                    <Text style={s.volver}> ←  Volver</Text>
                 </TouchableOpacity>
-                <Text style={s.titulo}>← Añadir contactos</Text>
+                <Text style={s.titulo}>Añadir contactos</Text>
             </View>
 
             <View style={s.form}>
