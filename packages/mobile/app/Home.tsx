@@ -10,14 +10,20 @@ interface Conversacion {
 interface Props {
     nombre:string;
     onAbrirChat: (contacto: string) => void;
-    onAnadirContacto: () => void
+    onAnadirContacto: () => void;
+    onAbrirPefil: () => void;
 }
-export default function Home({ nombre, onAbrirChat, onAnadirContacto }: Props) {
-    const conversaciones: Conversacion[] = []; // por ahora vacío
+export default function Home({ nombre, onAbrirChat, onAnadirContacto, onAbrirPefil }: Props) {
+    const conversaciones: Conversacion[] = [];
 
     return (
         <View style={s.container}>
             <View style={s.header}>
+                <TouchableOpacity onPress={onAbrirPefil}>
+                    <View style={s.avatar2}>
+                        <Text style={s.avatarLetra2}>{nombre[0]?.toUpperCase()} </Text>
+                    </View>
+                </TouchableOpacity>
                 <Text style={s.titulo}>Nexus</Text>
                 <TouchableOpacity style={s.botonAdd} onPress={onAnadirContacto}>
                     <Text style={s.botonAddTexto}>+</Text>
@@ -86,5 +92,7 @@ const s = StyleSheet.create({
     itemInfo: {flex: 1},
     itemNombre: { color: '#fff', fontSize: 16, fontWeight: '600'},
     itemMensaje: {color: '#888', fontSize: 14, marginTop: 2},
-    itemHora: {color: '#888', fontSize: 12}
+    itemHora: {color: '#888', fontSize: 12},
+    avatar2: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#6c47ff', justifyContent: 'center', alignItems: 'center'},
+    avatarLetra2:{ color: '#fff', fontSize: 14, fontWeight: 'bold'},
 });
