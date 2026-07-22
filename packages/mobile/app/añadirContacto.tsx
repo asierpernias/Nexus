@@ -8,6 +8,8 @@ import * as SecureStore from 'expo-secure-store';
 interface Props {
     onVolver: () => void;
     onContactoAñadido: (nombre: string) => void;
+    onEscanearQr: () => void;
+    claveEscaneada: string | null;
 }
 
 export async function guardarContacto(nombre:string, publicKeyB64:string):Promise<void> {
@@ -22,10 +24,14 @@ export async function cargarContactos(): Promise<Record<string, string>> {
     return raw ? JSON.parse(raw) : {};
 }
 
-export default function AnadirContacto({onVolver, onContactoAñadido}: Props) {
+export default function AnadirContacto({onVolver, onContactoAñadido, onEscanearQr, claveEscaneada}: Props) {
     const [nombre, setNombre] = useState('');
     const [clavePublica, setClavePublica] = useState('');
     const [cargando, setCargando] = useState(false);
+
+    React.useEffect(() => {
+        if (claveEscaneada) setClavePublica(claveEscaneada);
+    }, [claveEscaneada]);
 
     async function añadir(){
         if (!nombre.trim() || !clavePublica.trim()) {
