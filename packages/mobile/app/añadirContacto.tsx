@@ -79,6 +79,9 @@ export default function AnadirContacto({onVolver, onContactoAñadido, onEscanear
                     multiline
                     autoCapitalize="none"
                 />
+                <TouchableOpacity style={s.botonSecundario} onPress={onEscanearQr}>
+                    <Text style={s.botonSecundarioTexto}>Escanear codigo QR</Text>  
+                </TouchableOpacity>  
                 <TouchableOpacity
                     style={s.boton}
                     onPress={añadir}
@@ -121,4 +124,14 @@ const s = StyleSheet.create({
         marginTop: 24,
     },
     botonTexto: { color: '#fff', fontSize: 16, fontWeight: '600'},
+    botonSecundario : {
+        backgroundColor: '#1a1a1a',
+        borderRadius: 10,
+        padding: 14,
+        alignItems: 'center',
+        marginTop: 12,
+        borderWidth: 1,
+        borderColor: '#6c47ff'
+    },
+    botonSecundarioTexto: { color: '#6c47ff', fontSize: 15, fontWeight: '600'},
 });

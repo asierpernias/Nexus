@@ -2,6 +2,7 @@ import React from "react";
 import {View, Text, TouchableOpacity, StyleSheet, ScrollView} from 'react-native';
 import QRCode from "react-native-qrcode-svg";
 import sodium from 'react-native-libsodium';
+import { toBase64 } from "../lib/base64";
 
 interface Props {
     nombre: string;
@@ -10,7 +11,7 @@ interface Props {
 }
 
 export default function Perfil({nombre, publicKey, onVolver}: Props) {
-    const claveB64 = bytesToBase64(publicKey);
+    const claveB64 = toBase64(publicKey);
 
     return (
         <ScrollView contentContainerStyle={s.container}>

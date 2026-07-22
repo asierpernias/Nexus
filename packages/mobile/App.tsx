@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import Login from './app/login';
 import Home from "./app/Home";
 import AnadirContacto from "./app/añadirContacto";
-
+import Perfil from "./app/Perfil";
+import EscanearQR from "./app/EscanearQr"
 interface Identidad {
   nombre: string;
   publicKey: Uint8Array;
