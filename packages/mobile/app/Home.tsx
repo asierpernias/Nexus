@@ -1,8 +1,8 @@
 import React from "react";
 import {useState, useEffect} from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import AnadirContacto, { cargarContactos } from "./añadirContacto";
-import { astToReact } from "react-native-svg/lib/typescript/xml";
+import  { cargarContactos } from "./añadirContacto";
+
 interface Conversacion {
     nombre:string;
     ultimoMensaje:string;
