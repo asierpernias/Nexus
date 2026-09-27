@@ -1,6 +1,8 @@
 import React from "react";
+import {useState, useEffect} from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-
+import AnadirContacto, { cargarContactos } from "./añadirContacto";
+import { astToReact } from "react-native-svg/lib/typescript/xml";
 interface Conversacion {
     nombre:string;
     ultimoMensaje:string;
@@ -11,15 +13,36 @@ interface Props {
     nombre:string;
     onAbrirChat: (contacto: string) => void;
     onAnadirContacto: () => void;
-    onAbrirPefil: () => void;
+    onAbrirPerfil: () => void;
 }
-export default function Home({ nombre, onAbrirChat, onAnadirContacto, onAbrirPefil }: Props) {
-    const conversaciones: Conversacion[] = [];
+export default function Home({ nombre, onAbrirChat, onAnadirContacto, onAbrirPerfil }: Props) {
+    const [conversaciones, setConversaciones] = useState<Conversacion[]>([]);
+    const [cargando, setCargando] = useState(true);
+
+    useEffect(() => {
+        let activo = true;
+        (async () => {
+            try{
+                const contacto = await cargarContactos();
+                if (!activo) return;
+                const lista: Conversacion[] = Object.keys(contacto).map((nombreContacto) => ({                    nombre: nombreContacto,
+                    ultimoMensaje: 'Sin mensajes todavia',
+                    hora: '',
+                }));
+                setConversaciones(lista)
+            } catch(e){
+                console.error('Error cargando contactos', e);
+            } finally {
+                if (activo) setCargando(false);
+            }
+        })();
+        return () => {activo = false;};
+    }, []);
 
     return (
         <View style={s.container}>
             <View style={s.header}>
-                <TouchableOpacity onPress={onAbrirPefil}>
+                <TouchableOpacity onPress={onAbrirPerfil}>
                     <View style={s.avatar2}>
                         <Text style={s.avatarLetra2}>{nombre[0]?.toUpperCase()} </Text>
                     </View>

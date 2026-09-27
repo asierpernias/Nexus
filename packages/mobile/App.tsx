@@ -3,7 +3,6 @@ import Login from './app/login';
 import Home from "./app/Home";
 import AnadirContacto from "./app/añadirContacto";
 import Perfil from "./app/Perfil";
-import QRCode from "./app/EscanearQR";
 import EscanearQR from "./app/EscanearQR";
 
 interface Identidad {
